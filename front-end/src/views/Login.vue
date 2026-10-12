@@ -22,7 +22,7 @@
             </p>
             <div id="5316_19330" class="Pixso-frame-5316_19330" :style="mode==='register'?{height:'560px'}:{}">
                 <div id="5316_19332" class="Pixso-rectangle-5316_19332"></div>
-                <div id="5316_19710" class="Pixso-rectangle-5316_19710" style="opacity:0"></div>
+                <div v-if="mode==='login'" id="5316_19710" class="Pixso-rectangle-5316_19710"></div>
                 <div id="5316_19711" class="Pixso-rectangle-5316_19711"></div>
                 <div id="5316_19709" class="Pixso-rectangle-5316_19709"></div>
                 <p id="5316_19712" class="Pixso-paragraph-5316_19712 pixso-flex cursor" @click="mode='login'" :style="mode==='register'?{color:'rgba(97,97,97,1)'}:{}">登 录</p>

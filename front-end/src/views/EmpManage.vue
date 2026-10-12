@@ -1,74 +1,65 @@
 <template>
   <div>
-    <div class="hm-page-header"><span class="hm-page-title">员工管理</span></div>
-
-    <!-- 搜索栏 -->
-    <div class="hm-card" style="margin-bottom:14px">
+    <!-- 搜索栏卡（设计：1196×64，内边距 12/16，元素 40 高、gap 8） -->
+    <div class="hm-card search-card">
       <div class="search-bar">
-        <el-button class="back-btn" @click="() => $router.back()"><AppIcon name="arrow-left" :size="14" /></el-button>
-        <el-input v-model="query.name" placeholder="搜索姓名 / 工号" clearable style="width:280px" @keyup.enter="load" @clear="load">
-          <template #prefix><AppIcon name="search" :size="14" /></template>
+        <el-button class="sq-btn" @click="() => $router.back()"><AppIcon name="arrow-left" :size="18" /></el-button>
+        <el-input v-model="query.name" placeholder="搜索姓名 / 工号" clearable class="search-input" @keyup.enter="load" @clear="load">
+          <template #prefix><AppIcon name="search" :size="16" /></template>
         </el-input>
-        <el-button class="scan-btn" @click="load"><AppIcon name="scan" :size="16" /></el-button>
-        <el-select v-model="query.gender" placeholder="性别" clearable style="width:110px" @change="load">
+        <el-button class="sq-btn" @click="load"><AppIcon name="scan" :size="18" /></el-button>
+        <el-select v-model="query.gender" placeholder="性别" clearable class="mini-select" @change="load">
           <el-option label="男" :value="1" /><el-option label="女" :value="2" />
         </el-select>
-        <el-select v-model="query.status" placeholder="在职状态" style="width:110px" @change="load">
+        <el-select v-model="query.status" placeholder="在职状态" class="mini-select" @change="load">
           <el-option label="在职" :value="1" /><el-option label="离职" :value="0" /><el-option label="全部" :value="null" />
         </el-select>
         <div style="flex:1" />
-        <el-button type="primary" @click="openAdd"><AppIcon name="plus" :size="13" style="margin-right:4px" />新增员工</el-button>
+        <el-button type="primary" class="add-btn" @click="openAdd">＋ 新增员工</el-button>
       </div>
     </div>
 
-    <!-- 状态筛选行 -->
+    <!-- 状态筛选行（设计：1196×56） -->
     <div class="hm-card chips-bar">
       <span class="chips-label">在职状态</span>
-      <span class="hm-tag cursor" :class="query.status === 1 ? 'hm-tag-info' : 'hm-tag-default'" @click="setStatus(1)">在职</span>
-      <span class="hm-tag cursor" :class="query.status === 0 ? 'hm-tag-warning' : 'hm-tag-default'" @click="setStatus(0)">离职</span>
-      <span class="hm-tag cursor" :class="query.status === null ? 'hm-tag-info' : 'hm-tag-default'" @click="setStatus(null)">全部</span>
+      <span class="hm-tag chip cursor" :class="query.status === 1 ? 'hm-tag-info' : 'hm-tag-default'" @click="setStatus(1)">在职</span>
+      <span class="hm-tag chip cursor" :class="query.status === 0 ? 'hm-tag-warning' : 'hm-tag-default'" @click="setStatus(0)">离职</span>
+      <span class="hm-tag chip cursor" :class="query.status === null ? 'hm-tag-info' : 'hm-tag-default'" @click="setStatus(null)">全部</span>
       <div style="flex:1" />
-      <el-button v-if="selection.length" link type="danger" @click="onBatchDelete">批量离职({{ selection.length }})</el-button>
+      <span class="batch-link" :class="{ disabled: !selection.length }" @click="selection.length && onBatchDelete()">批量离职</span>
     </div>
 
-    <!-- 表格 -->
-    <div class="hm-card">
-      <el-table :data="rows" v-loading="loading" stripe @selection-change="s => selection = s">
-        <el-table-column type="selection" width="45" />
+    <!-- 表格卡（设计：1196×520，内边距左右 24，表头 1148×40） -->
+    <div class="hm-card table-card">
+      <div class="card-title">员工列表</div>
+      <div class="card-count">共 {{ total }} 条</div>
+      <el-table :data="rows" v-loading="loading" class="hm-table" :row-class-name="rowClass" @row-click="toggleRow">
         <el-table-column prop="id" label="工号" width="70" />
-        <el-table-column label="姓名" width="130">
+        <el-table-column prop="name" label="姓名" width="75" />
+        <el-table-column label="性别" width="94">
           <template #default="{ row }">
-            <div class="name-cell">
-              <el-avatar :size="30" :src="row.image || undefined" style="background:#E8F0FE;color:#0A59F7;font-weight:600;flex-shrink:0">{{ row.name[0] }}</el-avatar>
-              <span>{{ row.name }}</span>
-            </div>
+            <span class="hm-tag hm-tag-info col-tag">{{ row.gender === 1 ? '男' : '女' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="性别" width="80">
+        <el-table-column prop="job" label="职位" width="200" show-overflow-tooltip />
+        <el-table-column prop="deptName" label="部门" width="136" />
+        <el-table-column label="状态" width="144">
           <template #default="{ row }">
-            <span class="hm-tag" :class="row.gender === 1 ? 'hm-tag-info' : 'hm-tag-danger'">{{ row.gender === 1 ? '男' : '女' }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="phone" label="手机号" width="130" />
-        <el-table-column prop="job" label="职位" min-width="130" />
-        <el-table-column prop="deptName" label="部门" width="110" />
-        <el-table-column prop="entryDate" label="入职日期" width="120" />
-        <el-table-column label="状态" width="90">
-          <template #default="{ row }">
-            <span class="hm-tag" :class="row.status === 1 ? 'hm-tag-success' : 'hm-tag-default'">
+            <span class="hm-tag col-tag" :class="row.status === 1 ? 'hm-tag-success' : 'hm-tag-default'">
               {{ row.status === 1 ? '在职' : '离职' }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="170" align="right" fixed="right">
+        <el-table-column prop="entryDate" label="入职日期" width="180" />
+        <el-table-column label="操作" min-width="230">
           <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="openDetail(row)">详情</el-button>
-            <el-button v-if="row.status === 1" link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
-            <el-button v-if="row.status === 1" link type="danger" size="small" @click="onDeleteOne(row)">离职</el-button>
+            <span class="op-link" @click.stop="openDetail(row)">详情</span>
+            <span v-if="row.status === 1" class="op-link" @click.stop="openEdit(row)">编辑</span>
+            <span v-if="row.status === 1" class="op-link op-danger" @click.stop="onDeleteOne(row)">离职</span>
           </template>
         </el-table-column>
       </el-table>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
+      <div class="table-footer">
         <el-pagination background layout="total, prev, pager, next, sizes"
           :total="total" v-model:current-page="query.page" v-model:page-size="query.pageSize"
           :page-sizes="[10, 20, 50]" @change="load" />
@@ -199,6 +190,16 @@ function setStatus(v) {
   load()
 }
 
+// ===== 无复选框列时的行点击多选（支撑"批量离职"） =====
+function toggleRow(row) {
+  const i = selection.value.findIndex(r => r.id === row.id)
+  if (i >= 0) selection.value.splice(i, 1)
+  else selection.value.push(row)
+}
+function rowClass({ row }) {
+  return selection.value.some(r => r.id === row.id) ? 'row-selected' : ''
+}
+
 function emptyForm() {
   return { id: null, name: '', gender: 1, phone: '', job: '', entryDate: '', deptId: null, exprList: [] }
 }
@@ -280,11 +281,58 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.search-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.back-btn, .scan-btn { width: 36px; padding: 0; }
-.chips-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; padding: 12px 20px; }
-.chips-label { font-size: 12px; color: var(--hm-text-secondary); }
+/* ===== 搜索卡 1196×64 ===== */
+.search-card { height: 64px; padding: 12px 16px; margin-bottom: 16px; }
+.search-bar { display: flex; gap: 8px; align-items: center; height: 40px; }
+.sq-btn { width: 40px; height: 40px; padding: 0; border-radius: 8px; }
+.search-input { width: 204px; }
+.mini-select { width: 95px; }
+.add-btn { width: 120px; height: 40px; font-size: 14px; }
+.search-bar :deep(.el-input__wrapper),
+.search-bar :deep(.el-select__wrapper) { height: 40px; border-radius: 8px; }
+.search-input { margin-right: 0; }
+.search-bar > .el-select:nth-of-type(1) { margin-left: 8px; }
+.search-bar > .el-select + .el-select { margin-left: 8px; }
+
+/* ===== 状态行 1196×56 ===== */
+.chips-bar {
+  height: 56px; padding: 0 24px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.chips-label { font-size: 12px; color: var(--hm-text-secondary); margin-right: 4px; }
+.chip { height: 22px; line-height: 22px; padding: 0 15px; display: inline-flex; align-items: center; }
+.batch-link { font-size: 12px; color: var(--hm-danger); cursor: pointer; }
+.batch-link.disabled { color: var(--hm-text-hint); }
+
+/* ===== 表格卡 1196×520 ===== */
+.table-card { height: 520px; position: relative; }
+.card-title { padding: 22px 24px 0; font-size: 14px; font-weight: 600; color: var(--hm-text); }
+.card-count { position: absolute; right: 24px; top: 24px; font-size: 11px; color: var(--hm-text-hint); }
+.hm-table { margin: 12px 24px 0; }
+.col-tag { height: 22px; line-height: 22px; padding: 0 10px; display: inline-flex; align-items: center; }
 .cursor { cursor: pointer; }
+.op-link { font-size: 12px; color: var(--hm-primary); cursor: pointer; margin-right: 24px; }
+.op-link.op-danger { color: var(--hm-danger); margin-right: 0; }
+.table-footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+/* 表头：40 高 / #FAFBFC / 12px 灰字 */
+.hm-table :deep(th.el-table__cell) {
+  height: 40px; background: #FAFBFC; color: var(--hm-text-hint);
+  font-size: 12px; font-weight: 400; border-bottom: none; padding: 0;
+}
+.hm-table :deep(.el-table__header th:first-child) { border-radius: 8px 0 0 8px; padding-left: 29px; }
+.hm-table :deep(.el-table__header th:last-child) { border-radius: 0 8px 8px 0; }
+.hm-table :deep(.el-table__header-wrapper) { border-radius: 8px; overflow: hidden; }
+/* 数据行：56 高 / 分隔线 #F1F3F5 */
+.hm-table :deep(td.el-table__cell) {
+  height: 56px; padding: 0; border-bottom: 1px solid #F1F3F5;
+  font-size: 12px; color: var(--hm-text);
+}
+.hm-table :deep(td.el-table__cell:first-child) { padding-left: 29px; }
+.hm-table :deep(.el-table__row:last-child td.el-table__cell) { border-bottom: none; }
+.hm-table :deep(.el-table__body-wrapper) { overflow: visible; }
+.hm-table :deep(tr.row-selected td.el-table__cell) { background: var(--hm-primary-light) !important; }
+.hm-table :deep(.el-table__row) { cursor: pointer; }
 .expr-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
 .name-cell { display: flex; align-items: center; gap: 8px; }
 .photo-area { display: flex; gap: 16px; align-items: center; }
@@ -296,4 +344,5 @@ onMounted(async () => {
 }
 .photo-name { font-size: 16px; font-weight: 600; color: var(--hm-text); display: flex; align-items: center; gap: 8px; }
 .photo-job { font-size: 12px; color: var(--hm-text-secondary); margin-top: 4px; }
+
 </style>
