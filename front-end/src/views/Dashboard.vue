@@ -1,6 +1,18 @@
 <template>
   <div>
-    <div class="hm-page-header">
+    <!-- 员工端：欢迎横幅 -->
+    <div v-if="!user.isAdmin" class="welcome-banner">
+      <div>
+        <div class="wb-title">Hi，{{ user.userInfo?.name }}，今天也要元气满满！</div>
+        <div class="wb-sub">{{ todayStr }} · 你有 {{ pendingCount }} 条申请正在审批中，本月工资待发放</div>
+      </div>
+      <div class="wb-right">
+        <span class="wb-job">{{ user.userInfo?.job || '暂无职位' }} · {{ user.userInfo?.deptName || '未分配部门' }}</span>
+        <el-avatar :size="56" :src="user.userInfo?.image || undefined" class="wb-avatar">{{ (user.userInfo?.name || '用')[0] }}</el-avatar>
+      </div>
+    </div>
+    <!-- 管理端：页面标题 -->
+    <div v-else class="hm-page-header">
       <span class="hm-page-title">工作台</span>
     </div>
     <div class="stat-grid">
@@ -32,7 +44,16 @@ import { useUserStore } from '../stores/user'
 import { pageEmps, listDepts, pageNotices, mySalaries, myLeaves, myTransfers, pageLeaves, pageTransfers } from '../api'
 
 const user = useUserStore()
-const data = ref({ empCount: '-', deptCount: '-', noticeCount: '-', mySalaryCount: '-', myLeaveCount: '-', myTransferCount: '-', pendingLeave: 0, pendingTransfer: 0 })
+const data = ref({ empCount: '-', deptCount: '-', noticeCount: '-', mySalaryCount: '-', myLeaveCount: '-', myTransferCount: '-', pendingLeave: 0, pendingTransfer: 0, myPending: 0 })
+
+// 员工端欢迎横幅
+const todayStr = computed(() => {
+  const d = new Date()
+  const week = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()]
+  const p = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} 星期${week}`
+})
+const pendingCount = computed(() => data.value.myPending)
 
 const stats = computed(() => {
   if (user.isAdmin) {
@@ -82,12 +103,30 @@ onMounted(async () => {
       data.value.mySalaryCount = sal.length
       data.value.myLeaveCount = lv.length
       data.value.myTransferCount = tf.length
+      data.value.myPending = lv.filter(l => l.status === 0).length + tf.filter(t => t.status === 0).length
     }
   } catch { /* 拦截器已提示 */ }
 })
 </script>
 
 <style scoped>
+/* 员工端欢迎横幅 */
+.welcome-banner {
+  background: linear-gradient(135deg, #0A59F7 0%, #3375F8 100%);
+  border-radius: var(--hm-radius-card);
+  color: #fff;
+  padding: 26px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(10, 89, 247, 0.25);
+}
+.wb-title { font-size: 20px; font-weight: 600; }
+.wb-sub { font-size: 13px; opacity: 0.85; margin-top: 8px; }
+.wb-right { display: flex; align-items: center; gap: 14px; }
+.wb-job { font-size: 12px; opacity: 0.85; }
+.wb-avatar { background: rgba(255,255,255,0.2); color: #fff; font-size: 20px; font-weight: 600; flex-shrink: 0; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .stat-card { display: flex; align-items: center; gap: 14px; }
 .stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
