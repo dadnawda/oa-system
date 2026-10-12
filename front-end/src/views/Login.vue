@@ -105,12 +105,12 @@ async function onLogin() {
   if (!loginForm.empId || !loginForm.password) { ElMessage.warning('请输入工号与密码'); return }
   loading.value = true
   try {
-    const data = await login({ empId: Number(loginForm.empId), password: loginForm.password })
-    // 先存 token（后续请求自动携带），再拉取完整用户信息
-    store.setLogin(data.token, { empId: data.empId, role: data.role, name: data.name })
+    const data = await login({ empId: Number(loginForm.empId), password: loginForm.password, role: role.value })
+    // 先存 token（后续请求自动携带），再拉取完整用户信息；身份即进入后的界面视角
+    store.setLogin(data.token, { empId: data.empId, role: data.role, name: data.name }, data.identity || role.value)
     const info = await getUserInfo()
-    store.setLogin(data.token, { ...info, role: data.role, empId: data.empId })
-    ElMessage.success('欢迎回来，' + data.name)
+    store.setLogin(data.token, { ...info, role: data.role, empId: data.empId }, data.identity || role.value)
+    ElMessage.success('欢迎回来，' + data.name + '（' + ((data.identity || role.value) === 'admin' ? '管理员' : '员工') + '身份）')
     router.push('/dashboard')
   } finally { loading.value = false }
 }

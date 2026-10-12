@@ -46,14 +46,23 @@ public class UserServiceImpl implements UserService {
         if (!PasswordUtils.md5(dto.getPassword()).equals(user.getPassword())) {
             throw new BusinessException("密码错误");
         }
+        // ===== 登录身份校验：身份即界面视角 =====
+        String identity = (dto.getRole() == null || dto.getRole().isBlank()) ? user.getRole() : dto.getRole().trim();
+        if (!"admin".equals(identity) && !"staff".equals(identity)) {
+            throw new BusinessException("登录身份不合法，请选择管理员或员工");
+        }
+        if ("admin".equals(identity) && !"admin".equals(user.getRole())) {
+            throw new BusinessException("该账号不是管理员，请选择「员工」身份登录");
+        }
         String name = empMapper.selectNameById(user.getEmpId());
         String token = JwtUtils.generateToken(user.getEmpId(), user.getRole());
-        log.info("员工工号 {} 登录成功，角色 {}", user.getEmpId(), user.getRole());
+        log.info("员工工号 {} 登录成功，真实角色 {}，登录身份 {}", user.getEmpId(), user.getRole(), identity);
 
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("empId", user.getEmpId());
         data.put("role", user.getRole());
+        data.put("identity", identity);
         data.put("name", name);
         return data;
     }

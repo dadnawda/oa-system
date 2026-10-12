@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- ============ 员工端个人工作台 ============ -->
-    <template v-if="!user.isAdmin">
+    <template v-if="!user.viewIsAdmin">
       <!-- 欢迎横幅 1196×110 -->
       <div class="banner">
         <div class="banner-main">
@@ -152,7 +152,7 @@ const statusMeta = s => (s === 0
   : s === 1 ? { text: '已通过', cls: 'hm-tag-success' } : { text: '已驳回', cls: 'hm-tag-danger' })
 
 const stats = computed(() => {
-  if (user.isAdmin) {
+  if (user.viewIsAdmin) {
     return [
       { label: '员工总数', value: data.value.empCount, unit: '人', icon: 'users', color: '#0A59F7', bg: '#E8F0FE' },
       { label: '部门数量', value: data.value.deptCount, unit: '个', icon: 'building', color: '#00B34A', bg: '#E6F7EE' },
@@ -183,7 +183,7 @@ onMounted(async () => {
     data.value.noticeCount = noticePage.total
     notices.value = noticePage.rows || []
 
-    if (user.isAdmin) {
+    if (user.viewIsAdmin) {
       const [emps, pl, pt] = await Promise.all([
         pageEmps({ page: 1, pageSize: 4 }),
         pageLeaves({ status: 0, page: 1, pageSize: 1 }),

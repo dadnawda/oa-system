@@ -39,7 +39,7 @@ router.beforeEach(to => {
   if (to.path === '/login' && tokenValid) {
     return '/dashboard'
   }
-  if (to.meta.admin && !store.isAdmin) {
+  if (to.meta.admin && !store.viewIsAdmin) {
     return '/dashboard'
   }
 })

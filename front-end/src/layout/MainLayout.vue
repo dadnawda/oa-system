@@ -6,7 +6,7 @@
         <div class="brand-logo"><AppIcon name="grid" :size="16" color="#fff" /></div>
         <span class="brand-name">OA 系统</span>
       </div>
-      <div v-if="!user.isAdmin" class="side-role">员工端</div>
+      <div class="side-role">{{ user.viewIsAdmin ? '管理员端' : '员工端' }}</div>
       <nav class="menu">
         <router-link v-for="m in menus" :key="m.path" :to="m.path" class="menu-item" active-class="active">
           <AppIcon :name="m.icon" :size="16" />
@@ -24,10 +24,10 @@
       <header class="topbar">
         <span class="top-title">{{ route.meta.title || '工作台' }}</span>
         <div class="top-right">
-          <span class="welcome">{{ user.userInfo?.name }} · {{ user.isAdmin ? '管理员' : '员工' }}</span>
+          <span class="welcome">{{ user.userInfo?.name }} · {{ user.viewIsAdmin ? '管理员' : '员工' }}</span>
           <el-avatar v-if="user.userInfo?.image" :size="32" :src="user.userInfo.image" class="avatar" />
-          <div v-else class="avatar" :class="user.isAdmin ? 'avatar-admin' : 'avatar-staff'">
-            <AppIcon name="user" :size="15" :color="user.isAdmin ? '#0A59F7' : '#00B34A'" />
+          <div v-else class="avatar" :class="user.viewIsAdmin ? 'avatar-admin' : 'avatar-staff'">
+            <AppIcon name="user" :size="15" :color="user.viewIsAdmin ? '#0A59F7' : '#00B34A'" />
           </div>
         </div>
       </header>
@@ -62,7 +62,7 @@ const ALL_MENUS = [
 ]
 
 const menus = computed(() =>
-  ALL_MENUS.filter(m => !m.admin || user.isAdmin).filter(m => !m.staff || !user.isAdmin)
+  ALL_MENUS.filter(m => !m.admin || user.viewIsAdmin).filter(m => !m.staff || !user.viewIsAdmin)
 )
 
 function onLogout() {
