@@ -19,13 +19,15 @@ public class NoticeController {
 
     @GetMapping("/api/notices")
     public Result<?> page(@RequestParam(defaultValue = "1") Integer page,
-                          @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(noticeService.page(page, pageSize, isAdmin()));
+                          @RequestParam(defaultValue = "10") Integer pageSize,
+                          @RequestHeader(value = "X-View-Identity", required = false) String viewIdentity) {
+        return Result.success(noticeService.page(page, pageSize, canSeeDraft(viewIdentity)));
     }
 
     @GetMapping("/api/notices/{id}")
-    public Result<Notice> detail(@PathVariable Long id) {
-        return Result.success(noticeService.detail(id, isAdmin()));
+    public Result<Notice> detail(@PathVariable Long id,
+                                 @RequestHeader(value = "X-View-Identity", required = false) String viewIdentity) {
+        return Result.success(noticeService.detail(id, canSeeDraft(viewIdentity)));
     }
 
     @PostMapping("/api/admin/notices")
@@ -50,5 +52,14 @@ public class NoticeController {
     private boolean isAdmin() {
         LoginUser user = UserContext.get();
         return user != null && "admin".equals(user.getRole());
+    }
+
+    /**
+     * 能否看到草稿：
+     * 需要真实角色是管理员，且当前不是以"员工身份"进入（前端通过 X-View-Identity 头传递登录身份）。
+     * 这样"管理员以员工身份进入"时看到的就是员工视角 —— 草稿不显示，但权限本身不受影响。
+     */
+    private boolean canSeeDraft(String viewIdentity) {
+        return isAdmin() && !"staff".equalsIgnoreCase(viewIdentity);
     }
 }

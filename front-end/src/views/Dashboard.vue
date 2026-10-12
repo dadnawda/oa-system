@@ -6,7 +6,7 @@
       <div class="banner">
         <div class="banner-main">
           <div class="banner-title">Hi，{{ user.userInfo?.name }}，今天也要元气满满！</div>
-          <div class="banner-sub">{{ todayStr }} · 你有 {{ pendingCount }} 条申请正在审批中，本月工资待发放</div>
+          <div class="banner-sub">{{ todayStr }} · 你有 {{ pendingCount }} 条申请正在审批中，{{ salaryText }}</div>
         </div>
         <div class="banner-right">
           <span class="banner-job">{{ user.userInfo?.job || '暂无职位' }} · {{ user.userInfo?.deptName || '未分配部门' }}</span>
@@ -130,13 +130,14 @@ import { pageEmps, listDepts, pageNotices, mySalaries, myLeaves, myTransfers, pa
 const user = useUserStore()
 const data = ref({
   empCount: '-', deptCount: '-', noticeCount: '-',
-  myLeaveCount: '-', myTransferCount: '-', mySalaryLatest: '-',
+  myLeaveCount: '-', myTransferCount: '-', mySalaryLatest: '-', mySalaryLabel: '本月工资',
   pendingLeave: 0, pendingTransfer: 0, myPending: 0
 })
 const pendingList = ref([])
 const progress = ref([])
 const overview = ref([])
 const notices = ref([])
+const salaries = ref([])   // 员工本人的工资记录（用于横幅文案与 KPI）
 
 const todayStr = computed(() => {
   const d = new Date()
@@ -145,6 +146,27 @@ const todayStr = computed(() => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} 星期${week}`
 })
 const pendingCount = computed(() => data.value.myPending)
+
+/**
+ * 横幅里的工资文案：按是否发放动态变化
+ *  - 本月有记录且已发放 → 本月工资已发放（附金额）
+ *  - 本月有记录但未发放 → 本月工资待发放
+ *  - 本月还没有记录     → 本月工资待核算
+ */
+const salaryText = computed(() => {
+  const cur = currentMonth()
+  const rec = salaries.value.find(x => x.salaryMonth === cur)
+  if (!rec) return '本月工资待核算'
+  return rec.status === 1
+    ? '本月工资已发放 ¥' + Number(rec.actualPay ?? 0).toLocaleString()
+    : '本月工资待发放'
+})
+
+/** 当前月份 YYYY-MM */
+function currentMonth() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
 
 const LEAVE_TYPE = { 1: '事假', 2: '病假', 3: '年假', 4: '调休', 5: '婚假' }
 const statusMeta = s => (s === 0
@@ -163,7 +185,7 @@ const stats = computed(() => {
   return [
     { label: '我的请假', value: data.value.myLeaveCount, unit: '条', icon: 'calendar-check', color: '#0A59F7', bg: '#E8F0FE' },
     { label: '我的调岗', value: data.value.myTransferCount, unit: '条', icon: 'swap', color: '#FF8D1A', bg: '#FFF3E5' },
-    { label: '本月工资', value: data.value.mySalaryLatest, unit: '实发', icon: 'wallet', color: '#00B34A', bg: '#E6F7EE' }
+    { label: data.value.mySalaryLabel, value: data.value.mySalaryLatest, unit: '实发', icon: 'wallet', color: '#00B34A', bg: '#E6F7EE' }
   ]
 })
 
@@ -215,11 +237,16 @@ onMounted(async () => {
       pendingList.value = list.slice(0, 3)
     } else {
       const [sal, lv, tf] = await Promise.all([mySalaries(), myLeaves(), myTransfers()])
+      salaries.value = sal
       data.value.myLeaveCount = lv.length
       data.value.myTransferCount = tf.length
       data.value.myPending = lv.filter(l => l.status === 0).length + tf.filter(t => t.status === 0).length
+      // KPI 优先展示本月工资；本月无记录时展示最近一个月，并把标签改成对应月份，避免本月与数据不符
+      const cur = salaries.value.find(x => x.salaryMonth === currentMonth())
       const latest = [...sal].sort((a, b) => (b.salaryMonth || '').localeCompare(a.salaryMonth || ''))[0]
-      data.value.mySalaryLatest = latest ? '¥' + Number(latest.actualPay ?? 0).toLocaleString() : '-'
+      const shown = cur || latest
+      data.value.mySalaryLatest = shown ? '¥' + Number(shown.actualPay ?? 0).toLocaleString() : '-'
+      data.value.mySalaryLabel = cur ? '本月工资' : (latest ? latest.salaryMonth + ' 工资' : '本月工资')
       // 我的申请进度（请假 + 调岗，按时间倒序取 3 条）
       const merged = [
         ...lv.map(r => ({

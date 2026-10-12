@@ -15,10 +15,14 @@ function clearSession() {
   localStorage.removeItem('oa_user')
 }
 
-// 请求拦截：自动携带 token
+// 请求拦截：自动携带 token 与登录身份
 request.interceptors.request.use(config => {
   const token = localStorage.getItem('oa_token')
   if (token) config.headers.Authorization = token
+  // 登录身份（admin/staff）：后端据此决定"内容可见性"（如员工视角看不到公告草稿）
+  // 注意：这只是视图视角，不代表权限 —— 权限仍以 token 里的真实角色为准
+  const identity = localStorage.getItem('oa_identity')
+  if (identity) config.headers['X-View-Identity'] = identity
   return config
 })
 

@@ -6,8 +6,8 @@
         <el-avatar v-if="info.image" :size="64" :src="info.image" class="avatar" />
         <div v-else class="avatar">{{ initial }}</div>
         <div class="name">{{ info.name }}</div>
-        <span class="hm-tag" :class="user.isAdmin ? 'hm-tag-info' : 'hm-tag-default'">
-          {{ user.isAdmin ? '管理员' : '普通员工' }}
+        <span class="hm-tag" :class="user.viewIsAdmin ? 'hm-tag-info' : 'hm-tag-default'">
+          {{ user.viewIsAdmin ? '管理员' : '普通员工' }}
         </span>
       </div>
       <div class="hm-card" style="flex:1">
@@ -36,7 +36,8 @@ const initial = computed(() => (info.value.name || '用')[0])
 
 onMounted(async () => {
   info.value = await getUserInfo()
-  user.setLogin(user.token, { ...info.value, role: user.userInfo?.role, empId: info.value.empId })
+  // 只刷新资料，不动登录身份（否则"员工身份"会被真实角色覆盖 → 界面翻成管理端）
+  user.updateUserInfo({ ...info.value, role: user.userInfo?.role, empId: info.value.empId })
 })
 </script>
 

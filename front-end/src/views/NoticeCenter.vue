@@ -2,7 +2,7 @@
   <div>
     <div class="hm-page-header">
       <span class="hm-page-title">公告中心</span>
-      <el-button v-if="user.isAdmin" type="primary" @click="openAdd">
+      <el-button v-if="user.viewIsAdmin" type="primary" @click="openAdd">
         <AppIcon name="plus" :size="13" style="margin-right:4px" />新建公告
       </el-button>
     </div>
@@ -24,7 +24,7 @@
         <el-table-column label="操作" width="170" align="right">
           <template #default="{ row }">
             <el-button link type="primary" size="small" @click="openDetail(row)">查看</el-button>
-            <template v-if="user.isAdmin">
+            <template v-if="user.viewIsAdmin">
               <el-button link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
               <el-button link type="danger" size="small" @click="onDelete(row)">删除</el-button>
             </template>

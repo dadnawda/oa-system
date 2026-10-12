@@ -16,13 +16,29 @@
   --hm-radius-btn: 8px;
   --hm-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   --hm-font: 'HarmonyOS Sans', 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
+
+  /* ===== 液态玻璃（命名对齐开源库 dpawlikowski/liquid-glass）===== */
+  --lg-blur: 20px;              /* backdrop-filter 模糊半径 */
+  --lg-saturate: 180%;          /* 饱和度增强 */
+  --lg-opacity: 0.55;           /* 玻璃白底不透明度（低于 .5 文字会糊） */
+  --lg-border-opacity: 0.60;    /* 高光描边透明度 */
+  --lg-radius: 20px;            /* 悬浮胶囊圆角 */
+  --lg-aurora: 1;               /* 流光边缘开关：1 开 / 0 关 */
+  --glass-bg: rgba(255, 255, 255, var(--lg-opacity));
+  --glass-blur: blur(var(--lg-blur)) saturate(var(--lg-saturate));
+  --glass-blur-refract: url(#lg-refraction) blur(var(--lg-blur)) saturate(var(--lg-saturate));
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: var(--hm-font);
-  background: var(--hm-page-bg);
+  background-color: var(--hm-page-bg);
+  /* 柔和光斑：为液态玻璃提供"可透过的色层"（纯色底上玻璃感不可见） */
+  background-image:
+    /* 单一中性微光：只保留明暗层次（让玻璃有可透内容），不带任何色偏 */
+    radial-gradient(1000px 700px at 15% 0%, rgba(255, 255, 255, 0.55), transparent 65%);
+  background-attachment: fixed;
   color: var(--hm-text);
   font-size: 14px;
 }

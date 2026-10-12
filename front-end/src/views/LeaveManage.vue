@@ -2,13 +2,13 @@
   <div>
     <div class="hm-page-header">
       <span class="hm-page-title">请假审批</span>
-      <el-button v-if="!user.isAdmin" type="primary" @click="openSubmit">
+      <el-button v-if="!user.viewIsAdmin" type="primary" @click="openSubmit">
         <AppIcon name="plus" :size="13" style="margin-right:4px" />提交请假
       </el-button>
     </div>
 
     <!-- 管理员：审批列表 -->
-    <template v-if="user.isAdmin">
+    <template v-if="user.viewIsAdmin">
       <div class="hm-card" style="margin-bottom:14px">
         <el-tabs v-model="activeTab" @tab-change="load">
           <el-tab-pane label="待审批" name="0" />
@@ -129,7 +129,7 @@ const effectiveStatus = computed(() => (activeTab.value === 'all' ? null : Numbe
 async function load() {
   loading.value = true
   try {
-    if (user.isAdmin) {
+    if (user.viewIsAdmin) {
       query.status = effectiveStatus.value
       const page = await pageLeaves(query)
       rows.value = page.rows

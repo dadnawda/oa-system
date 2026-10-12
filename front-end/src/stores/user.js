@@ -18,10 +18,18 @@ export const useUserStore = defineStore('user', {
     setLogin(token, userInfo, identity) {
       this.token = token
       this.userInfo = userInfo
-      this.identity = identity || userInfo?.role || ''
+      // 关键：未显式传身份时**保留当前身份**，不要回落到真实角色
+      // （否则"管理员以员工身份进入"后在个人中心刷新用户信息，会被真实角色 admin 覆盖 → 界面翻成管理端）
+      this.identity = identity || this.identity || userInfo?.role || ''
       localStorage.setItem('oa_token', token)
       localStorage.setItem('oa_user', JSON.stringify(userInfo))
       localStorage.setItem('oa_identity', this.identity)
+    },
+    /** 仅刷新用户资料，不改动登录身份（个人中心等页面用） */
+    updateUserInfo(userInfo) {
+      if (!userInfo) return
+      this.userInfo = { ...this.userInfo, ...userInfo }
+      localStorage.setItem('oa_user', JSON.stringify(this.userInfo))
     },
     logout() {
       this.token = ''

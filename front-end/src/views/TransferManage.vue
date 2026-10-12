@@ -2,13 +2,13 @@
   <div>
     <div class="hm-page-header">
       <span class="hm-page-title">职位调整</span>
-      <el-button v-if="!user.isAdmin" type="primary" @click="openSubmit">
+      <el-button v-if="!user.viewIsAdmin" type="primary" @click="openSubmit">
         <AppIcon name="plus" :size="13" style="margin-right:4px" />申请调岗
       </el-button>
     </div>
 
     <!-- 管理员：审批列表 -->
-    <template v-if="user.isAdmin">
+    <template v-if="user.viewIsAdmin">
       <div class="hm-card" style="margin-bottom:14px">
         <el-tabs v-model="activeTab" @tab-change="load">
           <el-tab-pane label="待审批" name="0" />
@@ -119,7 +119,7 @@ const statusClass = s => ({ 0: 'hm-tag-warning', 1: 'hm-tag-success', 2: 'hm-tag
 async function load() {
   loading.value = true
   try {
-    if (user.isAdmin) {
+    if (user.viewIsAdmin) {
       query.status = activeTab.value === 'all' ? null : Number(activeTab.value)
       const page = await pageTransfers(query)
       rows.value = page.rows
@@ -151,7 +151,8 @@ function openApprove(row) {
 }
 
 onMounted(async () => {
-  if (user.isAdmin) depts.value = await listDepts()
+  // 部门列表：所有登录用户都要加载（员工提交调岗申请时"目标部门"下拉依赖它）
+  depts.value = await listDepts()
   await load()
 })
 </script>
