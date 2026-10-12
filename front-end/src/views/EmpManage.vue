@@ -5,21 +5,30 @@
     <!-- 搜索栏 -->
     <div class="hm-card" style="margin-bottom:14px">
       <div class="search-bar">
-        <el-input v-model="query.name" placeholder="搜索姓名 / 工号" clearable style="width:200px" @keyup.enter="load" />
-        <el-select v-model="query.gender" placeholder="性别" clearable style="width:110px">
+        <el-button class="back-btn" @click="() => $router.back()"><AppIcon name="arrow-left" :size="14" /></el-button>
+        <el-input v-model="query.name" placeholder="搜索姓名 / 工号" clearable style="width:280px" @keyup.enter="load" @clear="load">
+          <template #prefix><AppIcon name="search" :size="14" /></template>
+        </el-input>
+        <el-button class="scan-btn" @click="load"><AppIcon name="scan" :size="16" /></el-button>
+        <el-select v-model="query.gender" placeholder="性别" clearable style="width:110px" @change="load">
           <el-option label="男" :value="1" /><el-option label="女" :value="2" />
         </el-select>
-        <el-select v-model="query.status" placeholder="在职状态" style="width:110px">
+        <el-select v-model="query.status" placeholder="在职状态" style="width:110px" @change="load">
           <el-option label="在职" :value="1" /><el-option label="离职" :value="0" /><el-option label="全部" :value="null" />
         </el-select>
-        <el-button type="primary" @click="load"><AppIcon name="search" :size="13" style="margin-right:4px" />查询</el-button>
-        <el-button @click="resetQuery">重置</el-button>
         <div style="flex:1" />
-        <el-button type="danger" plain :disabled="!selection.length" @click="onBatchDelete">
-          批量离职{{ selection.length ? `(${selection.length})` : '' }}
-        </el-button>
         <el-button type="primary" @click="openAdd"><AppIcon name="plus" :size="13" style="margin-right:4px" />新增员工</el-button>
       </div>
+    </div>
+
+    <!-- 状态筛选行 -->
+    <div class="hm-card chips-bar">
+      <span class="chips-label">在职状态</span>
+      <span class="hm-tag cursor" :class="query.status === 1 ? 'hm-tag-info' : 'hm-tag-default'" @click="setStatus(1)">在职</span>
+      <span class="hm-tag cursor" :class="query.status === 0 ? 'hm-tag-warning' : 'hm-tag-default'" @click="setStatus(0)">离职</span>
+      <span class="hm-tag cursor" :class="query.status === null ? 'hm-tag-info' : 'hm-tag-default'" @click="setStatus(null)">全部</span>
+      <div style="flex:1" />
+      <el-button v-if="selection.length" link type="danger" @click="onBatchDelete">批量离职({{ selection.length }})</el-button>
     </div>
 
     <!-- 表格 -->
@@ -156,6 +165,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppIcon from '../components/AppIcon.vue'
+import HmIcon from '../components/HmIcon.vue'
 import { pageEmps, getEmp, addEmp, updateEmp, deleteEmps, listDepts, uploadPhoto } from '../api'
 
 const query = reactive({ name: '', gender: null, status: 1, page: 1, pageSize: 10 })
@@ -180,6 +190,12 @@ async function load() {
 
 function resetQuery() {
   query.name = ''; query.gender = null; query.status = 1; query.page = 1
+  load()
+}
+
+function setStatus(v) {
+  query.status = v
+  query.page = 1
   load()
 }
 
@@ -265,6 +281,10 @@ onMounted(async () => {
 
 <style scoped>
 .search-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.back-btn, .scan-btn { width: 36px; padding: 0; }
+.chips-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; padding: 12px 20px; }
+.chips-label { font-size: 12px; color: var(--hm-text-secondary); }
+.cursor { cursor: pointer; }
 .expr-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
 .name-cell { display: flex; align-items: center; gap: 8px; }
 .photo-area { display: flex; gap: 16px; align-items: center; }

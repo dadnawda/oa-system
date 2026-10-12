@@ -17,7 +17,7 @@
     </div>
     <div class="stat-grid">
       <div v-for="s in stats" :key="s.label" class="hm-card stat-card">
-        <div class="stat-icon" :style="{ background: s.bg }"><AppIcon :name="s.icon" :size="18" :color="s.color" /></div>
+        <div class="stat-icon" :style="{ background: s.bg }"><HmIcon :name="s.icon" :size="20" :color="s.color" /></div>
         <div>
           <div class="stat-value">{{ s.value }}<span class="stat-unit">{{ s.unit }}</span></div>
           <div class="stat-label">{{ s.label }}</div>
@@ -29,7 +29,7 @@
       <div class="card-head">快捷入口</div>
       <div class="quick-grid">
         <router-link v-for="q in quickLinks" :key="q.path" :to="q.path" class="quick-item">
-          <AppIcon :name="q.icon" :size="18" color="#0A59F7" />
+          <HmIcon :name="q.icon" :size="20" :color="q.color || '#111111'" />
           <span>{{ q.title }}</span>
         </router-link>
       </div>
@@ -40,6 +40,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
+import HmIcon from '../components/HmIcon.vue'
 import { useUserStore } from '../stores/user'
 import { pageEmps, listDepts, pageNotices, mySalaries, myLeaves, myTransfers, pageLeaves, pageTransfers } from '../api'
 
@@ -58,29 +59,29 @@ const pendingCount = computed(() => data.value.myPending)
 const stats = computed(() => {
   if (user.isAdmin) {
     return [
-      { label: '员工总数', value: data.value.empCount, unit: '人', icon: 'people', color: '#0A59F7', bg: '#E8F0FE' },
-      { label: '部门数量', value: data.value.deptCount, unit: '个', icon: 'building', color: '#00B34A', bg: '#E6F7EE' },
-      { label: '公告数量', value: data.value.noticeCount, unit: '条', icon: 'doc', color: '#FF8D1A', bg: '#FFF3E5' },
-      { label: '待审批', value: data.value.pendingLeave + data.value.pendingTransfer, unit: '件', icon: 'check', color: '#E02020', bg: '#FDECEC' }
+      { label: '员工总数', value: data.value.empCount, unit: '人', icon: 'hm-people', color: '#0A59F7', bg: '#E8F0FE' },
+      { label: '部门数量', value: data.value.deptCount, unit: '个', icon: 'hm-building', color: '#00B34A', bg: '#E6F7EE' },
+      { label: '公告数量', value: data.value.noticeCount, unit: '条', icon: 'hm-chat', color: '#FF8D1A', bg: '#FFF3E5' },
+      { label: '待审批', value: data.value.pendingLeave + data.value.pendingTransfer, unit: '件', icon: 'hm-doc', color: '#E02020', bg: '#FDECEC' }
     ]
   }
   return [
-    { label: '我的请假申请', value: data.value.myLeaveCount, unit: '条', icon: 'leave', color: '#0A59F7', bg: '#E8F0FE' },
-    { label: '我的调岗申请', value: data.value.myTransferCount, unit: '条', icon: 'swap', color: '#00B34A', bg: '#E6F7EE' },
-    { label: '我的工资记录', value: data.value.mySalaryCount, unit: '条', icon: 'clock', color: '#FF8D1A', bg: '#FFF3E5' },
-    { label: '公告数量', value: data.value.noticeCount, unit: '条', icon: 'doc', color: '#E02020', bg: '#FDECEC' }
+    { label: '我的请假', value: data.value.myLeaveCount, unit: '条', icon: 'hm-my-chat', color: '#0A59F7', bg: '#E8F0FE' },
+    { label: '我的调岗', value: data.value.myTransferCount, unit: '条', icon: 'hm-my-swap', color: '#00B34A', bg: '#E6F7EE' },
+    { label: '本月工资', value: data.value.mySalaryCount, unit: '条', icon: 'hm-my-card', color: '#FF8D1A', bg: '#FFF3E5' },
+    { label: '公告数量', value: data.value.noticeCount, unit: '条', icon: 'hm-doc', color: '#E02020', bg: '#FDECEC' }
   ]
 })
 
 const quickLinks = computed(() => {
   const base = [
-    { path: '/notice', title: '查看公告', icon: 'doc' },
-    { path: '/leave', title: '请假申请', icon: 'leave' },
-    { path: '/transfer', title: '职位调整', icon: 'swap' },
-    { path: '/profile', title: '个人中心', icon: 'user' }
+    { path: '/notice', title: '查看公告', icon: 'hm-notice', color: '#111111' },
+    { path: '/leave', title: '请假申请', icon: 'hm-leave', color: '#111111' },
+    { path: '/transfer', title: '职位调整', icon: 'hm-my-swap', color: '#111111' },
+    { path: '/profile', title: '个人中心', icon: 'hm-user', color: '#111111' }
   ]
   return user.isAdmin
-    ? [{ path: '/emp', title: '员工管理', icon: 'people' }, { path: '/dept', title: '部门管理', icon: 'building' }, ...base.slice(0, 2), { path: '/salary', title: '工资管理', icon: 'money' }]
+    ? [{ path: '/emp', title: '员工管理', icon: 'hm-emp-star', color: '#00B34A' }, { path: '/dept', title: '部门管理', icon: 'hm-dept', color: '#111111' }, ...base.slice(0, 2), { path: '/salary', title: '工资管理', icon: 'hm-money', color: '#111111' }]
     : base
 })
 
@@ -129,7 +130,7 @@ onMounted(async () => {
 .wb-avatar { background: rgba(255,255,255,0.2); color: #fff; font-size: 20px; font-weight: 600; flex-shrink: 0; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .stat-card { display: flex; align-items: center; gap: 14px; }
-.stat-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-icon { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .stat-value { font-size: 22px; font-weight: 600; line-height: 1.2; }
 .stat-unit { font-size: 12px; font-weight: 400; color: var(--hm-text-hint); margin-left: 4px; }
 .stat-label { font-size: 12px; color: var(--hm-text-secondary); margin-top: 2px; }
