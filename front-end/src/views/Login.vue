@@ -1,9 +1,11 @@
 <template>
-    <div class="scroll-container">
-        <div
-            id="5316_19325"
-            class="Pixso-frame-5316_19325 pixso-relative-no-shrink"
-        >
+  <div class="scroll-container">
+    <div class="login-stage" :style="{ width: (1440 * scale) + 'px', height: (900 * scale) + 'px' }">
+      <div
+          id="5316_19325"
+          class="Pixso-frame-5316_19325 pixso-relative-no-shrink"
+          :style="{ transform: 'scale(' + scale + ')', transformOrigin: 'top left' }"
+      >
             <div id="5316_19326" class="Pixso-rectangle-5316_19326"></div>
             <p id="5316_19327" class="Pixso-paragraph-5316_19327 pixso-flex">
                 {{ "OA" }}
@@ -133,11 +135,12 @@
                     "Modern Blue 设计规范 · 主色 #0A59F7 · 圆角 16px · Noto Sans SC"
                 }}
             </p>
-        </div>
+      </div>
     </div>
+  </div>
 </template>
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login, register, getUserInfo } from '../api'
@@ -146,6 +149,12 @@ import { useUserStore } from '../stores/user'
 const router = useRouter()
 const store = useUserStore()
 const mode = ref('login')
+const scale = ref(1)
+function fit() {
+  scale.value = Math.min(1, window.innerWidth / 1440, window.innerHeight / 900)
+}
+onMounted(() => { fit(); window.addEventListener('resize', fit) })
+onUnmounted(() => window.removeEventListener('resize', fit))
 const role = ref('admin')
 const loading = ref(false)
 
@@ -187,13 +196,19 @@ async function onRegister() {
 </script>
 <style>
 .scroll-container {
-    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
     width: 100%;
     overflow: auto;
+    background-color: rgba(238, 243, 251, 1);
 }
 
+.login-stage { position: relative; flex-shrink: 0; }
+
 .Pixso-frame-5316_19325 {
-    width: 100%;
+    width: 1440px;
     height: 900px;
     overflow: hidden;
     background-color: rgba(238, 243, 251, 1);

@@ -11,14 +11,14 @@
         <div class="banner-right">
           <span class="banner-job">{{ user.userInfo?.job || '暂无职位' }} · {{ user.userInfo?.deptName || '未分配部门' }}</span>
           <el-avatar v-if="user.userInfo?.image" :size="64" :src="user.userInfo.image" class="banner-avatar" />
-          <div v-else class="banner-avatar"><HmIcon name="hm-user" :size="24" color="#0A59F7" /></div>
+          <div v-else class="banner-avatar"><AppIcon name="user" :size="24" color="#0A59F7" /></div>
         </div>
       </div>
 
       <!-- KPI 3 × 384×110 -->
       <div class="kpi-row cols-3">
         <div v-for="s in stats" :key="s.label" class="hm-card kpi-card kpi-staff">
-          <div class="kpi-bubble" :style="{ background: s.bg }"><HmIcon :name="s.icon" :size="24" :color="s.color" /></div>
+          <div class="kpi-bubble" :style="{ background: s.bg }"><AppIcon :name="s.icon" :size="24" :color="s.color" /></div>
           <div class="kpi-text">
             <div class="kpi-value kpi-value-sm">{{ s.value }}<span class="kpi-unit">{{ s.unit }}</span></div>
             <div class="kpi-label">{{ s.label }}</div>
@@ -65,7 +65,7 @@
       <!-- KPI 4 × 280×120 -->
       <div class="kpi-row cols-4">
         <div v-for="s in stats" :key="s.label" class="hm-card kpi-card kpi-admin">
-          <div class="kpi-bubble" :style="{ background: s.bg }"><HmIcon :name="s.icon" :size="24" :color="s.color" /></div>
+          <div class="kpi-bubble" :style="{ background: s.bg }"><AppIcon :name="s.icon" :size="24" :color="s.color" /></div>
           <div class="kpi-text">
             <div class="kpi-value">{{ s.value }}<span class="kpi-unit">{{ s.unit }}</span></div>
             <div class="kpi-label">{{ s.label }}</div>
@@ -91,7 +91,7 @@
           <div class="card-title">快捷入口</div>
           <div class="tile-grid">
             <router-link v-for="q in quickLinks" :key="q.path" :to="q.path" class="tile">
-              <HmIcon :name="q.icon" :size="24" :color="q.color" />
+              <AppIcon :name="q.icon" :size="24" :color="q.color" />
               <span>{{ q.title }}</span>
             </router-link>
           </div>
@@ -123,7 +123,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import HmIcon from '../components/HmIcon.vue'
+import AppIcon from '../components/AppIcon.vue'
 import { useUserStore } from '../stores/user'
 import { pageEmps, listDepts, pageNotices, mySalaries, myLeaves, myTransfers, pageLeaves, pageTransfers } from '../api'
 
@@ -154,26 +154,26 @@ const statusMeta = s => (s === 0
 const stats = computed(() => {
   if (user.isAdmin) {
     return [
-      { label: '员工总数', value: data.value.empCount, unit: '人', icon: 'hm-people', color: '#0A59F7', bg: '#E8F0FE' },
-      { label: '部门数量', value: data.value.deptCount, unit: '个', icon: 'hm-building', color: '#00B34A', bg: '#E6F7EE' },
-      { label: '公告数量', value: data.value.noticeCount, unit: '条', icon: 'hm-chat', color: '#FF8D1A', bg: '#FFF3E5' },
-      { label: '待审批', value: data.value.pendingLeave + data.value.pendingTransfer, unit: '件', icon: 'hm-doc', color: '#E02020', bg: '#FDECEC' }
+      { label: '员工总数', value: data.value.empCount, unit: '人', icon: 'users', color: '#0A59F7', bg: '#E8F0FE' },
+      { label: '部门数量', value: data.value.deptCount, unit: '个', icon: 'building', color: '#00B34A', bg: '#E6F7EE' },
+      { label: '公告数量', value: data.value.noticeCount, unit: '条', icon: 'megaphone', color: '#FF8D1A', bg: '#FFF3E5' },
+      { label: '待审批', value: data.value.pendingLeave + data.value.pendingTransfer, unit: '件', icon: 'clipboard-check', color: '#E02020', bg: '#FDECEC' }
     ]
   }
   return [
-    { label: '我的请假', value: data.value.myLeaveCount, unit: '条', icon: 'hm-my-chat', color: '#0A59F7', bg: '#E8F0FE' },
-    { label: '我的调岗', value: data.value.myTransferCount, unit: '条', icon: 'hm-my-swap', color: '#FF8D1A', bg: '#FFF3E5' },
-    { label: '本月工资', value: data.value.mySalaryLatest, unit: '实发', icon: 'hm-my-card', color: '#00B34A', bg: '#E6F7EE' }
+    { label: '我的请假', value: data.value.myLeaveCount, unit: '条', icon: 'calendar-check', color: '#0A59F7', bg: '#E8F0FE' },
+    { label: '我的调岗', value: data.value.myTransferCount, unit: '条', icon: 'swap', color: '#FF8D1A', bg: '#FFF3E5' },
+    { label: '本月工资', value: data.value.mySalaryLatest, unit: '实发', icon: 'wallet', color: '#00B34A', bg: '#E6F7EE' }
   ]
 })
 
 const quickLinks = [
-  { path: '/emp', title: '员工管理', icon: 'hm-emp-star', color: '#00B34A' },
-  { path: '/dept', title: '部门管理', icon: 'hm-dept', color: '#282F3E' },
-  { path: '/notice', title: '查看公告', icon: 'hm-notice', color: '#282F3E' },
-  { path: '/leave', title: '请假审批', icon: 'hm-leave', color: '#282F3E' },
-  { path: '/salary', title: '工资管理', icon: 'hm-money', color: '#444444' },
-  { path: '/profile', title: '个人中心', icon: 'hm-user', color: '#282F3E' }
+  { path: '/emp', title: '员工管理', icon: 'users', color: '#00B34A' },
+  { path: '/dept', title: '部门管理', icon: 'building', color: '#282F3E' },
+  { path: '/notice', title: '查看公告', icon: 'megaphone', color: '#282F3E' },
+  { path: '/leave', title: '请假审批', icon: 'calendar-check', color: '#282F3E' },
+  { path: '/salary', title: '工资管理', icon: 'wallet', color: '#444444' },
+  { path: '/profile', title: '个人中心', icon: 'user', color: '#282F3E' }
 ]
 
 onMounted(async () => {
@@ -250,8 +250,8 @@ onMounted(async () => {
 
 /* ========== KPI 行 ========== */
 .kpi-row { display: grid; gap: 20px; margin-bottom: 20px; }
-.cols-4 { grid-template-columns: repeat(4, 280px); }
-.cols-3 { grid-template-columns: repeat(3, 384px); }
+.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .kpi-card { position: relative; }
 .kpi-admin { height: 120px; }
 .kpi-staff { height: 110px; }
@@ -286,23 +286,24 @@ onMounted(async () => {
 }
 
 /* ========== 行2 布局 ========== */
-.row2 { display: flex; gap: 8px; }
+.row2 { display: grid; grid-template-columns: minmax(0, 700fr) minmax(0, 472fr); gap: 8px; }
 
 /* 员工端：我的申请进度 720×400（行 672×92，首行 y=52，步长 104） */
-.progress-card { width: 720px; height: 400px; position: relative; }
-.progress-card .row-list { position: absolute; left: 24px; top: 52px; width: 672px; }
-.progress-row { position: relative; width: 672px; height: 92px; border-radius: 10px; background: #FAFBFC; }
+.progress-card { height: 400px; position: relative; }
+.progress-card .row-list { position: absolute; left: 24px; right: 24px; top: 52px; }
+.progress-row { position: relative; height: 92px; border-radius: 10px; background: #FAFBFC; }
 .progress-row + .progress-row { margin-top: 12px; }
+.progress-card .row-list, .approve-list, .act-list, .notice-list { width: auto; }
 .pr-title { position: absolute; left: 16px; top: 18px; font-size: 13px; color: var(--hm-text); }
 .pr-tag { position: absolute; right: 16px; top: 12px; width: 60px; justify-content: center; }
 .pr-desc { position: absolute; left: 17px; top: 46px; font-size: 12px; color: var(--hm-text-secondary); }
 .pr-date { position: absolute; left: 16px; top: 68px; font-size: 11px; color: var(--hm-text-hint); }
 
 /* 员工端：快捷操作 452×400（按钮 y=48 步长 48；分区标题 y=208；列表 y=236 步长 52） */
-.action-card { width: 452px; height: 400px; position: relative; }
-.act-list { position: absolute; left: 24px; top: 48px; width: 404px; }
+.action-card { height: 400px; position: relative; }
+.act-list { position: absolute; left: 24px; right: 24px; top: 48px; }
 .act-btn {
-  width: 404px; height: 40px; border-radius: 8px;
+  height: 40px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; cursor: pointer; transition: opacity .15s;
 }
@@ -312,26 +313,26 @@ onMounted(async () => {
 .act-normal { background: #F1F3F5; color: var(--hm-text); }
 .act-light { background: var(--hm-primary-light); color: var(--hm-primary); }
 .act-section { top: 206px; }
-.notice-list { position: absolute; left: 24px; top: 236px; width: 404px; }
-.notice-item { position: relative; width: 404px; height: 44px; border-radius: 10px; background: #FAFBFC; }
+.notice-list { position: absolute; left: 24px; right: 24px; top: 236px; }
+.notice-item { position: relative; height: 44px; border-radius: 10px; background: #FAFBFC; }
 .notice-item + .notice-item { margin-top: 8px; }
 .ni-title { position: absolute; left: 15px; top: 8px; font-size: 12px; color: var(--hm-text); }
 .ni-date { position: absolute; left: 15px; top: 26px; font-size: 10px; color: var(--hm-text-hint); }
 
 /* 管理端：待审批 700×300（行 652×64，首行 y=56，步长 76） */
-.approve-card { width: 700px; height: 300px; position: relative; }
-.approve-list { position: absolute; left: 24px; top: 56px; width: 652px; }
-.approve-row { position: relative; width: 652px; height: 64px; border-radius: 10px; background: #FAFBFC; }
+.approve-card { height: 300px; position: relative; }
+.approve-list { position: absolute; left: 24px; right: 24px; top: 56px; }
+.approve-row { position: relative; height: 64px; border-radius: 10px; background: #FAFBFC; }
 .approve-row + .approve-row { margin-top: 12px; }
 .ar-title { position: absolute; left: 16px; top: 16px; font-size: 13px; color: var(--hm-text); }
 .approve-row .pr-tag { right: 24px; top: 10px; width: 52px; }
 .ar-sub { position: absolute; left: 16px; top: 39px; font-size: 11px; color: var(--hm-text-hint); }
 
 /* 管理端：快捷入口 472×300（tiles 132×96，起始 (24,52)，gap 12/16） */
-.quick-card { width: 472px; height: 300px; position: relative; }
+.quick-card { height: 300px; position: relative; }
 .tile-grid {
-  position: absolute; left: 24px; top: 52px;
-  display: grid; grid-template-columns: repeat(3, 132px); gap: 16px 12px;
+  position: absolute; left: 24px; right: 24px; top: 52px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 12px;
 }
 .tile {
   height: 96px; border-radius: 12px; background: #F8FAFC;
@@ -342,16 +343,16 @@ onMounted(async () => {
 .tile span { margin-top: 10px; }
 
 /* 管理端：员工概览 1196×320（表头 y=50 高 40；数据行高 52，首行 y=90） */
-.overview-card { width: 1196px; height: 320px; margin-top: 20px; position: relative; }
+.overview-card { width: 100%; height: 320px; margin-top: 20px; position: relative; }
 .ov-head, .ov-row {
-  display: grid; grid-template-columns: 70px 75px 94px 200px 136px 144px 1fr;
-  align-items: center; box-sizing: border-box; width: 1148px; padding-left: 41px;
+  display: grid; grid-template-columns: 70px 75px 94px 200px 136px 144px minmax(0, 1fr);
+  align-items: center; box-sizing: border-box; width: auto; padding-left: 41px;
 }
 .ov-head {
-  position: absolute; left: 24px; top: 50px; height: 40px;
+  position: absolute; left: 24px; right: 24px; top: 50px; height: 40px;
   border-radius: 8px; background: #FAFBFC; font-size: 12px; color: var(--hm-text-hint);
 }
-.ov-body { position: absolute; left: 24px; top: 90px; width: 1148px; }
+.ov-body { position: absolute; left: 24px; right: 24px; top: 90px; }
 .ov-row { height: 52px; font-size: 12px; color: var(--hm-text); border-top: 1px solid #F1F3F5; }
 .ov-row.ov-first { border-top: none; }
 .ov-tag { height: 22px; line-height: 22px; padding: 0 10px; display: inline-flex; align-items: center; width: fit-content; }

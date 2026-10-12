@@ -52,11 +52,11 @@ const user = useUserStore()
 const ALL_MENUS = [
   { path: '/dashboard', title: '工作台', icon: 'home' },
   { path: '/dept', title: '部门管理', icon: 'building', admin: true },
-  { path: '/emp', title: '员工管理', icon: 'people', admin: true },
-  { path: '/notice', title: '公告中心', icon: 'doc' },
-  { path: '/salary', title: '工资管理', icon: 'money', admin: true },
-  { path: '/my-salary', title: '我的工资', icon: 'clock', staff: true },
-  { path: '/leave', title: '请假审批', icon: 'leave' },
+  { path: '/emp', title: '员工管理', icon: 'users', admin: true },
+  { path: '/notice', title: '公告中心', icon: 'megaphone' },
+  { path: '/salary', title: '工资管理', icon: 'wallet', admin: true },
+  { path: '/my-salary', title: '我的工资', icon: 'receipt', staff: true },
+  { path: '/leave', title: '请假审批', icon: 'calendar-check' },
   { path: '/transfer', title: '调岗审批', icon: 'swap' },
   { path: '/profile', title: '个人中心', icon: 'user' }
 ]
@@ -126,5 +126,5 @@ function onLogout() {
 }
 .avatar-admin { background: #E8F0FE; }
 .avatar-staff { background: #E6F7EE; }
-.content { padding: 24px 20px 24px 24px; flex: 1; }
+.content { padding: 24px 20px 24px 24px; flex: 1; min-width: 0; }
 </style>
