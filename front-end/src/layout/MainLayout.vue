@@ -20,7 +20,8 @@
         <span class="top-title">{{ route.meta.title || '工作台' }}</span>
         <div class="top-right">
           <span class="welcome">{{ user.userInfo?.name }} · {{ user.isAdmin ? '管理员' : '员工' }}</span>
-          <div class="avatar">{{ (user.userInfo?.name || '用')[0] }}</div>
+          <el-avatar v-if="user.userInfo?.image" :size="28" :src="user.userInfo.image" class="avatar" />
+          <div v-else class="avatar">{{ (user.userInfo?.name || '用')[0] }}</div>
           <el-button text size="small" @click="onLogout">
             <AppIcon name="logout" :size="14" style="margin-right:4px" />退出
           </el-button>

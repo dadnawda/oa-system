@@ -15,10 +15,17 @@ import org.example.web.pojo.entity.User;
 import org.example.web.service.EmpService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -140,5 +147,49 @@ public class EmpServiceImpl implements EmpService {
             expr.setEmpId(empId);
         }
         empExprMapper.batchInsert(exprList);
+    }
+
+    private static final Set<String> ALLOWED_EXT = Set.of("jpg", "jpeg", "png", "webp");
+    private static final long MAX_PHOTO_SIZE = 5L * 1024 * 1024;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String uploadPhoto(Long empId, MultipartFile file) {
+        Emp emp = empMapper.getById(empId);
+        if (emp == null) {
+            throw new BusinessException("员工不存在");
+        }
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("请选择要上传的照片");
+        }
+        if (file.getSize() > MAX_PHOTO_SIZE) {
+            throw new BusinessException("照片不能超过 5MB");
+        }
+        String original = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
+        String ext = original.contains(".")
+                ? original.substring(original.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT)
+                : "";
+        if (!ALLOWED_EXT.contains(ext)) {
+            throw new BusinessException("仅支持 jpg / jpeg / png / webp 格式");
+        }
+        try {
+            // 存储目录：项目根/upload/emp/，URL 统一为 /upload/emp/xxx
+            Path dir = Paths.get(System.getProperty("user.dir"), "upload", "emp");
+            Files.createDirectories(dir);
+            String filename = "emp-" + empId + "-" + System.currentTimeMillis() + "." + ext;
+            file.transferTo(new File(dir.toFile(), filename));
+            String url = "/upload/emp/" + filename;
+            Emp upd = new Emp();
+            upd.setId(empId);
+            upd.setImage(url);
+            empMapper.update(upd);
+            log.info("员工 {} 上传照片成功：{}", empId, url);
+            return url;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("照片保存失败", e);
+            throw new BusinessException("照片保存失败，请稍后重试");
+        }
     }
 }

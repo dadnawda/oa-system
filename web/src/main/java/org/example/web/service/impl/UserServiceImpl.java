@@ -107,6 +107,7 @@ public class UserServiceImpl implements UserService {
         data.put("empId", loginUser.getEmpId());
         data.put("role", loginUser.getRole());
         data.put("name", emp.getName());
+        data.put("image", emp.getImage());
         data.put("phone", emp.getPhone());
         data.put("job", emp.getJob());
         data.put("entryDate", emp.getEntryDate());

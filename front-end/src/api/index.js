@@ -14,6 +14,12 @@ export const getEmp = id => request.get(`/admin/emps/${id}`)
 export const addEmp = data => request.post('/admin/emps', data)
 export const updateEmp = (id, data) => request.put(`/admin/emps/${id}`, data)
 export const deleteEmps = ids => request.delete('/admin/emps', { params: { ids: ids.join(',') } })
+// 上传员工照片：FormData 走原生 axios（避免 JSON 拦截器干扰）
+export const uploadPhoto = (id, file) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return request.post(`/admin/emps/${id}/photo`, fd)
+}
 
 export const pageNotices = params => request.get('/notices', { params })
 export const getNotice = id => request.get(`/notices/${id}`)

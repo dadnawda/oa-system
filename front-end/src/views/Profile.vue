@@ -3,7 +3,8 @@
     <div class="hm-page-header"><span class="hm-page-title">个人中心</span></div>
     <div class="profile-wrap">
       <div class="hm-card profile-card">
-        <div class="avatar">{{ initial }}</div>
+        <el-avatar v-if="info.image" :size="64" :src="info.image" class="avatar" />
+        <div v-else class="avatar">{{ initial }}</div>
         <div class="name">{{ info.name }}</div>
         <span class="hm-tag" :class="user.isAdmin ? 'hm-tag-info' : 'hm-tag-default'">
           {{ user.isAdmin ? '管理员' : '普通员工' }}

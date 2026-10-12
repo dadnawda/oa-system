@@ -30,4 +30,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .maxAge(3600);
     }
+
+    /**
+     * 员工照片等上传文件的静态访问：/upload/** -> 项目根/upload/ 目录（无需登录态）
+     */
+    @Override
+    public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/upload/");
+    }
 }

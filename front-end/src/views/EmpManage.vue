@@ -5,15 +5,13 @@
     <!-- 搜索栏 -->
     <div class="hm-card" style="margin-bottom:14px">
       <div class="search-bar">
-        <el-input v-model="query.name" placeholder="按姓名搜索" clearable style="width:170px" @keyup.enter="load" />
+        <el-input v-model="query.name" placeholder="搜索姓名 / 工号" clearable style="width:200px" @keyup.enter="load" />
         <el-select v-model="query.gender" placeholder="性别" clearable style="width:110px">
           <el-option label="男" :value="1" /><el-option label="女" :value="2" />
         </el-select>
         <el-select v-model="query.status" placeholder="在职状态" style="width:110px">
           <el-option label="在职" :value="1" /><el-option label="离职" :value="0" /><el-option label="全部" :value="null" />
         </el-select>
-        <el-date-picker v-model="range" type="daterange" value-format="YYYY-MM-DD"
-                        start-placeholder="入职开始" end-placeholder="入职结束" style="width:240px" />
         <el-button type="primary" @click="load"><AppIcon name="search" :size="13" style="margin-right:4px" />查询</el-button>
         <el-button @click="resetQuery">重置</el-button>
         <div style="flex:1" />
@@ -29,7 +27,14 @@
       <el-table :data="rows" v-loading="loading" stripe @selection-change="s => selection = s">
         <el-table-column type="selection" width="45" />
         <el-table-column prop="id" label="工号" width="70" />
-        <el-table-column prop="name" label="姓名" width="100" />
+        <el-table-column label="姓名" width="130">
+          <template #default="{ row }">
+            <div class="name-cell">
+              <el-avatar :size="30" :src="row.image || undefined" style="background:#E8F0FE;color:#0A59F7;font-weight:600;flex-shrink:0">{{ row.name[0] }}</el-avatar>
+              <span>{{ row.name }}</span>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="性别" width="80">
           <template #default="{ row }">
             <span class="hm-tag" :class="row.gender === 1 ? 'hm-tag-info' : 'hm-tag-danger'">{{ row.gender === 1 ? '男' : '女' }}</span>
@@ -105,14 +110,35 @@
     <!-- 详情对话框 -->
     <el-dialog v-model="detail.visible" title="员工详情" width="560px">
       <template v-if="detail.data">
+        <!-- 照片区：展示 + 上传 -->
+        <div class="photo-area">
+          <el-image v-if="detail.data.image" :src="detail.data.image" fit="cover" class="photo"
+                    :preview-src-list="[detail.data.image]" />
+          <div v-else class="photo photo-empty">{{ detail.data.name[0] }}</div>
+          <div class="photo-info">
+            <div class="photo-name">{{ detail.data.name }} <span class="hm-tag hm-tag-info">{{ detail.data.id }}</span></div>
+            <div class="photo-job">{{ detail.data.job || '暂无职位' }} · {{ detail.data.deptName || '未分配部门' }}</div>
+            <el-upload v-if="rowEditable" :show-file-list="false" accept="image/jpeg,image/png,image/webp"
+                       :http-request="doUploadPhoto" style="margin-top:8px">
+              <el-button type="primary" plain size="small" :loading="uploading">
+                <AppIcon name="edit" :size="12" style="margin-right:4px" />{{ detail.data.image ? '更换照片' : '上传照片' }}
+              </el-button>
+            </el-upload>
+            <div v-else style="font-size:11px;color:var(--hm-text-hint);margin-top:8px">离职员工档案，照片不可修改</div>
+          </div>
+        </div>
+        <el-divider style="margin:12px 0" />
         <el-descriptions :column="2" border size="small">
-          <el-descriptions-item label="工号">{{ detail.data.id }}</el-descriptions-item>
-          <el-descriptions-item label="姓名">{{ detail.data.name }}</el-descriptions-item>
           <el-descriptions-item label="性别">{{ detail.data.gender === 1 ? '男' : '女' }}</el-descriptions-item>
           <el-descriptions-item label="手机号">{{ detail.data.phone || '-' }}</el-descriptions-item>
           <el-descriptions-item label="职位">{{ detail.data.job || '-' }}</el-descriptions-item>
           <el-descriptions-item label="部门">{{ detail.data.deptName || '-' }}</el-descriptions-item>
           <el-descriptions-item label="入职日期">{{ detail.data.entryDate || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="在职状态">
+            <span class="hm-tag" :class="detail.data.status === 1 ? 'hm-tag-success' : 'hm-tag-default'">
+              {{ detail.data.status === 1 ? '在职' : '离职' }}
+            </span>
+          </el-descriptions-item>
         </el-descriptions>
         <el-divider content-position="left">工作经历</el-divider>
         <el-table :data="detail.data.exprList || []" size="small">
@@ -127,13 +153,12 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppIcon from '../components/AppIcon.vue'
-import { pageEmps, getEmp, addEmp, updateEmp, deleteEmps, listDepts } from '../api'
+import { pageEmps, getEmp, addEmp, updateEmp, deleteEmps, listDepts, uploadPhoto } from '../api'
 
 const query = reactive({ name: '', gender: null, status: 1, page: 1, pageSize: 10 })
-const range = ref(null)
 const rows = ref([])
 const total = ref(0)
 const loading = ref(false)
@@ -146,8 +171,7 @@ async function load() {
   loading.value = true
   try {
     const params = { ...query, name: query.name || undefined, gender: query.gender ?? undefined,
-      status: query.status ?? undefined,
-      begin: range.value?.[0], end: range.value?.[1] }
+      status: query.status ?? undefined }
     const page = await pageEmps(params)
     rows.value = page.rows
     total.value = page.total
@@ -155,7 +179,7 @@ async function load() {
 }
 
 function resetQuery() {
-  query.name = ''; query.gender = null; query.status = 1; query.page = 1; range.value = null
+  query.name = ''; query.gender = null; query.status = 1; query.page = 1
   load()
 }
 
@@ -217,6 +241,22 @@ async function doDelete(ids) {
 const onDeleteOne = row => doDelete([row.id])
 const onBatchDelete = () => doDelete(selection.value.map(r => r.id))
 
+// ===== 照片上传 =====
+const uploading = ref(false)
+// 离职员工档案不允许改照片（与后端规则呼应：在职才可编辑）
+const rowEditable = computed(() => detail.data?.status === 1)
+
+async function doUploadPhoto({ file }) {
+  uploading.value = true
+  try {
+    await uploadPhoto(detail.data.id, file)
+    ElMessage.success('照片上传成功')
+    // 重新拉取详情与列表，展示新照片
+    detail.data = await getEmp(detail.data.id)
+    await load()
+  } finally { uploading.value = false }
+}
+
 onMounted(async () => {
   depts.value = await listDepts()
   await load()
@@ -226,4 +266,14 @@ onMounted(async () => {
 <style scoped>
 .search-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .expr-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.name-cell { display: flex; align-items: center; gap: 8px; }
+.photo-area { display: flex; gap: 16px; align-items: center; }
+.photo { width: 88px; height: 88px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+.photo-empty {
+  background: var(--hm-primary-light); color: var(--hm-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 600;
+}
+.photo-name { font-size: 16px; font-weight: 600; color: var(--hm-text); display: flex; align-items: center; gap: 8px; }
+.photo-job { font-size: 12px; color: var(--hm-text-secondary); margin-top: 4px; }
 </style>

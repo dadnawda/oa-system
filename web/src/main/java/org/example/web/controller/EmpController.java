@@ -7,6 +7,7 @@ import org.example.web.pojo.dto.EmpRequest;
 import org.example.web.pojo.entity.Emp;
 import org.example.web.service.EmpService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,5 +47,11 @@ public class EmpController {
     public Result<Void> deleteBatch(@RequestParam List<Long> ids) {
         empService.deleteBatch(ids);
         return Result.success();
+    }
+
+    /** 上传员工个人照片：multipart 表单，字段名 file */
+    @PostMapping("/api/admin/emps/{id}/photo")
+    public Result<String> uploadPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        return Result.success(empService.uploadPhoto(id, file));
     }
 }
