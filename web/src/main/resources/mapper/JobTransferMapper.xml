@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.web.mapper.JobTransferMapper">
+
+    <select id="page" resultType="org.example.web.pojo.entity.JobTransfer">
+        select jt.*, e1.name as emp_name, e2.name as approver_name, d.name as target_dept_name
+        from job_transfer jt
+        left join emp e1 on jt.emp_id = e1.id
+        left join emp e2 on jt.approver_id = e2.id
+        left join dept d on jt.target_dept_id = d.id
+        <where>
+            <if test="status != null">jt.status = #{status}</if>
+        </where>
+        order by jt.create_time desc, jt.id desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="count" resultType="long">
+        select count(*) from job_transfer
+        <where>
+            <if test="status != null">status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="listMine" resultType="org.example.web.pojo.entity.JobTransfer">
+        select jt.*, e2.name as approver_name, d.name as target_dept_name
+        from job_transfer jt
+        left join emp e2 on jt.approver_id = e2.id
+        left join dept d on jt.target_dept_id = d.id
+        where jt.emp_id = #{empId}
+        order by jt.create_time desc, jt.id desc
+    </select>
+
+    <select id="getById" resultType="org.example.web.pojo.entity.JobTransfer">
+        select * from job_transfer where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into job_transfer (emp_id, current_job, target_job, target_dept_id, reason, status)
+        values (#{empId}, #{currentJob}, #{targetJob}, #{targetDeptId}, #{reason}, 0)
+    </insert>
+</mapper>

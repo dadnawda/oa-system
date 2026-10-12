@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.web.mapper.SalaryMapper">
+
+    <select id="page" resultType="org.example.web.pojo.entity.Salary">
+        select s.*, e.name as emp_name
+        from salary s
+        left join emp e on s.emp_id = e.id
+        <where>
+            <if test="empId != null">s.emp_id = #{empId}</if>
+            <if test="salaryMonth != null and salaryMonth != ''">and s.salary_month = #{salaryMonth}</if>
+        </where>
+        order by s.salary_month desc, s.id desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="count" resultType="long">
+        select count(*) from salary
+        <where>
+            <if test="empId != null">emp_id = #{empId}</if>
+            <if test="salaryMonth != null and salaryMonth != ''">and salary_month = #{salaryMonth}</if>
+        </where>
+    </select>
+
+    <select id="listByEmpId" resultType="org.example.web.pojo.entity.Salary">
+        select * from salary where emp_id = #{empId} order by salary_month desc
+    </select>
+
+    <select id="getById" resultType="org.example.web.pojo.entity.Salary">
+        select * from salary where id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into salary (emp_id, salary_month, base_salary, bonus, deduction, actual_pay)
+        values (#{empId}, #{salaryMonth}, #{baseSalary}, #{bonus}, #{deduction}, #{actualPay})
+    </insert>
+
+    <update id="update">
+        update salary
+        <set>
+            <if test="baseSalary != null">base_salary = #{baseSalary},</if>
+            <if test="bonus != null">bonus = #{bonus},</if>
+            <if test="deduction != null">deduction = #{deduction},</if>
+            <if test="actualPay != null">actual_pay = #{actualPay},</if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

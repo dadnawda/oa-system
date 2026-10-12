@@ -1,0 +1,27 @@
+# ===== Java / Spring Boot =====
+web/target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# ===== 前端 =====
+front-end/node_modules/
+front-end/dist/
+*.local
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# ===== 工作区产物（本地生成，不入库）=====
+output/
+.workbuddy/
+logs/
+*.docx.tmp
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db
